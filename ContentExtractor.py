@@ -1,9 +1,10 @@
 import os
-from docx import Document
+from docx import Document as DocxDocument
 from langchain_community.document_loaders import PyPDFLoader
+from langchain.schema import Document
 
-def context_extractor(file_path):
-    text_extension =['.txt']
+def Context_Extractor(file_path):
+    text_extension = ['.txt']
     pdf_extension = ['.pdf']
     docx_extension = ['.docx']
     text = ''
@@ -11,23 +12,19 @@ def context_extractor(file_path):
     if file_extension in text_extension:
         with open(file_path, 'r') as f:
             text = f.read()
-        return text
     elif file_extension in pdf_extension:
         pdf_loader = PyPDFLoader(file_path)
         pages = pdf_loader.load()  # Correctly load the PDF pages
         for page in pages:
             text += page.page_content  # Access the content of each page correctly
             text += '\n'
-        return text
     elif file_extension in docx_extension:
-        doc = Document(file_path)
+        doc = DocxDocument(file_path)
         text = [paragraph.text for paragraph in doc.paragraphs]
-        return '\n'.join(text)
+        text = '\n'.join(text)
     else:
-        print('File extension not supported')
+        print(f'File extension not supported for file: {file_path}')
+        return None
 
-file_path = r'D:\Check\Table_prerequisites_MSc_DaCS.pdf'  # Change this to the path of your file
-extracted_text = context_extractor(file_path)
+    return Document(page_content=text, metadata={"source": file_path})
 
-# Print the extracted text
-print(extracted_text)
